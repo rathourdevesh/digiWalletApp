@@ -27,7 +27,7 @@ public class usersDataService {
 
 	public usersModel getUserByName(String userName) {
 		List<usersModel> user = userRepository.findbyUsername(userName);
-		System.out.println("user " + user.size());
+		log.info("user count queried " + user.size());
 		if(user.size() >= 1) {
 			return user.get(0);
 		}
@@ -42,10 +42,10 @@ public class usersDataService {
 			return false;
 		}
 		usersModel data =  this.getUserByName(user.getUserName());
+		log.info("Data retrived: " + data);
 		if(data == null) {
 			return false;
 		}
-		System.out.println("Data " + data);
 		return true;
 	}
 }

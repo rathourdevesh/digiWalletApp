@@ -1,10 +1,14 @@
 package com.devesh.digitalWallet;
 
 
+import java.util.HashMap;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +22,7 @@ import com.devesh.digitalWallet.common.responseObject;
 import com.devesh.digitalWallet.dao.usersModel;
 import com.devesh.digitalWallet.service.usersDataService;
 import com.devesh.digitalWallet.utils.jwtUtil;
+import com.devesh.digitalWallet.utils.CreateAcctNum;
 
 import ch.qos.logback.classic.Logger;
 
@@ -36,54 +41,64 @@ public class controller {
 	@Autowired
 	private jwtUtil jwtTokenUtil;
 
+	@Autowired
+	private CreateAcctNum createAcctNum;
+
     @ModelAttribute
     public void setResponseHeader(HttpServletResponse response) {
         response.setHeader("Content-type", "aplication/json");
     }
 
     @RequestMapping(value = "/register", method=RequestMethod.POST)
-	public responseObject registerUser(@RequestBody usersModel newUser) {
-    	log.info("Create user for ".concat(newUser.getUserName()));
+	public ResponseEntity<Object> registerUser(@RequestBody usersModel newUser) {
+    	log.info("Create user request for ".concat(newUser.getUserName()));
     	
 //    	Validating UserId.
     	boolean val = userService.validateIfUserExists(newUser);
  
     	log.info("Request Validated " + val);
     	if(val) {
-    		return new responseObject(false,"Error Creating User!!");
+    		return responseObject.generateResponse(HttpStatus.CONFLICT, false, "Error Creating User!!");
     	}
     	else {
     		newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+    		String acctNum = createAcctNum.generateAcctNum(newUser.getAccountType());
+    		newUser.setAccountNumber(acctNum);
+    		newUser.setBalance(0);
         	userService.createUser(newUser);
-    		return new responseObject(
-    				true,
-    				String.format("User %s created", newUser.getUserName())
-    				);
+        	HashMap<String, Object> meta = new HashMap<String, Object>();
+        	meta.put("Account Number", acctNum);
+    		return responseObject.generateResponse(
+    				HttpStatus.CREATED, true,
+    				String.format("User %s created", newUser.getUserName()),
+    				meta);
     	}
 	}
- 
+
     @RequestMapping(value = "/authenticate", method=RequestMethod.POST)
-	public responseObject authenticateUser() {
+	public ResponseEntity<Object> authenticateUser() {
     	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     	String userName = authentication.getName();
     	usersModel user = userService.getUserByName(userName);
     	String jwt = jwtTokenUtil.generateToken(user);
-		return new responseObject(
-				true,
-				jwt
-				);
+    	HashMap<String, Object> meta = new HashMap<String, Object>();
+    	meta.put("jwt", jwt);
+    	return responseObject.generateResponse(
+    			HttpStatus.OK, true,
+    			"User authenticated",
+    			meta);
     }
-    
-    @RequestMapping(value = "/login", method=RequestMethod.POST)
-	public responseObject loginUser(@RequestBody usersModel user) {
+
+    @RequestMapping(value = "/user", method=RequestMethod.GET)
+	public ResponseEntity<Object> loginUser() {
     	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    	String currentPrincipalName = authentication.getName();
-    	System.out.println("current auth user "+ currentPrincipalName);
-    	boolean val = userService.validateIfUserExists(user);
-		return new responseObject(
-				val,
-				String.format("User logged in")
-				);
+    	String user = authentication.getName();
+    	log.info("current auth user "+ user);
+    	usersModel data = userService.getUserByName(user);
+    	return responseObject.generateResponse(
+    			HttpStatus.OK, true,
+    			"User Found!!",
+    			data.getUserDetails());
     }
     
 }

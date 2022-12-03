@@ -1,5 +1,6 @@
 package com.devesh.digitalWallet.dao;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -25,16 +26,19 @@ public class usersModel {
 	private  String userId;
 	private String userName;
 	private String name;
-	private Date creationDate = new Date();
+	private LocalDateTime creationDate = java.time.LocalDateTime.now();
 	private long phoneNumber;
 	private String uniqueId;
 	private String accountType;
+	private String accountNumber;
 	private String userType;
 	private String password;
 	private HashMap<String, String> address;
+	private long balance;
 
-	public usersModel(String userId, String userName, String name, Date creationDate, long phoneNumber, String uniqueId,
-			String accountType, String userType, String password, HashMap<String, String> address) {
+	public usersModel(String userId, String userName, String name, LocalDateTime creationDate, long phoneNumber,
+			String uniqueId, String accountType, String accountNumber, String userType, String password,
+			HashMap<String, String> address, long balance) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
@@ -43,9 +47,23 @@ public class usersModel {
 		this.phoneNumber = phoneNumber;
 		this.uniqueId = uniqueId;
 		this.accountType = accountType;
+		this.accountNumber = accountNumber;
 		this.userType = userType;
 		this.password = password;
 		this.address = address;
+		this.balance = balance;
+	}
+
+	public HashMap<String, Object> getUserDetails() {
+    	HashMap<String, Object> userMap = new HashMap<String, Object>();
+    	userMap.put("userName", this.userName);
+    	userMap.put("name", this.name);
+    	userMap.put("phoneNumber", this.phoneNumber);
+    	userMap.put("uniqueId", this.uniqueId);
+    	userMap.put("accountType", this.accountType);
+    	userMap.put("accountNumber", this.accountNumber);
+    	userMap.put("balance", this.balance);
+    	return userMap;
 	}
 
 	public HashMap<String, String> getAddress() {
@@ -102,10 +120,24 @@ public class usersModel {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Date getCreationDate() {
+	public LocalDateTime getCreationDate() {
 		return creationDate;
 	}
-	public void setCreationDate(Date creationDate) {
+	public void setCreationDate(LocalDateTime creationDate) {
 		this.creationDate = creationDate;
+	}
+	public String getAccountNumber() {
+		return accountNumber;
+	}
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
+
+	public long getBalance() {
+		return balance;
+	}
+
+	public void setBalance(long balance) {
+		this.balance = balance;
 	}
 }

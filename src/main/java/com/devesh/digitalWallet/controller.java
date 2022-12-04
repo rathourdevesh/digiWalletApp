@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.devesh.digitalWallet.common.responseObject;
 import com.devesh.digitalWallet.dao.usersModel;
+import com.devesh.digitalWallet.kafka.KafkaMsgProducer;
 import com.devesh.digitalWallet.service.usersDataService;
 import com.devesh.digitalWallet.utils.jwtUtil;
 import com.devesh.digitalWallet.utils.CreateAcctNum;
@@ -43,6 +44,9 @@ public class controller {
 
 	@Autowired
 	private CreateAcctNum createAcctNum;
+
+	@Autowired
+	private KafkaMsgProducer kafkaMsgProducer;
 
     @ModelAttribute
     public void setResponseHeader(HttpServletResponse response) {
@@ -68,6 +72,7 @@ public class controller {
         	userService.createUser(newUser);
         	HashMap<String, Object> meta = new HashMap<String, Object>();
         	meta.put("Account Number", acctNum);
+        	kafkaMsgProducer.produceOrderData(newUser.getUserDetails());
     		return responseObject.generateResponse(
     				HttpStatus.CREATED, true,
     				String.format("User %s created", newUser.getUserName()),

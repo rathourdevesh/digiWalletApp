@@ -1,7 +1,6 @@
 package com.devesh.digitalWallet.dao;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashMap;
 
 import org.springframework.data.annotation.Id;
